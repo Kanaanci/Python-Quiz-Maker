@@ -1,11 +1,13 @@
 import random
 import time
 import os
-import threading
+import sys
 
 def getStudentInfo():
   '''
   gets the name and ID of the student taking the quiz
+  Validates that the number of attempts to enter information is not greater than 3, else exits the program
+  Throws the ID to checkId() to validate 
   '''
   idCheckCounter = 1
   fName = input("First Name: ").title()
@@ -37,58 +39,71 @@ def checkId(id):
   idLen = len(id[1:])
     
   if id[:1] == 'A' and idLen == 5 and id[1:].isdigit():
+    #if the first character is 'A', the length after the first is 5 and every character after the first is a digit
     return True
   else:
     return False
 
 def readFile(questAmount):
   '''
-  read test bank, pick 10 random questions
+  read test bank, pick 10 or 20 random questions
   '''
   testBank = 'TestBank.txt'
-  qList = []
+  qList = [] #list of questions
   
   try:
-    with open(testBank, 'r') as tb:
-      questions = tb.readlines()
-      for i in range(0, questAmount):
-        rq = random.choice(questions)
+    with open(testBank, 'r') as tb: #reading the file
+      questions = tb.readlines()    #...
+      for i in range(0, questAmount): #looping over the number of questions
+        random_question = random.choice(questions) #and choosing a random one
         
         #if the question is in the list get a new question
-        while rq in qList:
-          rq = random.choice(questions)
+        while random_question in qList:
+          random_question = random.choice(questions)
 
-        qList.append([rq.split('#')[0], rq.split('#')[1]])
+        qList.append([random_question.split('#')[0], random_question.split('#')[1]])
+        #append the random question to the list of questions, splitting the question and answer into separate indexes
         
   except(FileNotFoundError):
-    print(testBank, "was not found")
+    print(testBank, "was not found...")
     
   return qList
 
 def outputFile(sInfo, qaList, totalScore, et):
   '''
   Creating the file to be used for the results. Naming format of id_fn_ln.txt
+  Appending the user info and questions/answers to the file along with score and time
   '''
+  unit_of_time = " minutes" #if the elapsed time is more than one minute
+
   resultsFile = str(sInfo[0][0]) + "_" + str(sInfo[0][1]) + "_" + str(sInfo[0][2]) + ".txt"
-  
-  # this is just creating the file so I can append to it later
+  #creating file namae
+
+  # this is just creating the file to append to later
   open(resultsFile, 'w').close()
         
   try:
-    with open(resultsFile, 'a') as usrF:
-      usrF.write("Student ID: " + sInfo[0][0] + "\n" + "First Name: " + sInfo[0][1] + "\n" + "Last name: " + sInfo[0][2] + "\n")
-      usrF.write("Score: " + str(totalScore) + "/10\n")
-      usrF.write("Elapsed time: " + str(et) + " minutes" + "\n")
+    with open(resultsFile, 'a') as user_file:
+      #appending the name, score and elapsed time to the header of the file
+      user_file.write("Student ID: " + sInfo[0][0] + "\n" + "First Name: " + sInfo[0][1] + "\n" + "Last name: " + sInfo[0][2] + "\n")
+      user_file.write("Score: " + str(totalScore) + "/10\n")
+      
+      if et < 1:
+        unit_of_time = " seconds"
+        et *= 60
+      
+      user_file.write("Elapsed time: " + str(et) + unit_of_time + "\n")
       
       for i in range(0, len(qaList)):
-        usrF.write("\nQ" + str(i + 1) + ". " + qaList[i][0] + "\n" + "Correct answer: " + qaList[i][1] + "\n" + "User answer: " + qaList[i][2] + "\n")
+        #looping over questions answered, printing them out along with user's answer/correct answer
+        user_file.write("\nQ" + str(i + 1) + ". " + qaList[i][0] + "\n" + "Correct answer: " + qaList[i][1] + "\n" + "User answer: " + qaList[i][2] + "\n")
         
   except FileNotFoundError:
     print("Error creating results file")
     
   print(resultsFile + " was created")
   
-  exit()
+  sys.exit()
     
 def checkInput(questionAnswer, userAnswer):
   '''
@@ -106,62 +121,63 @@ def checkInput(questionAnswer, userAnswer):
   else:
     return False
     
-def quizTrack(qList, qTotal):
-  score = 0
-  i = 0
-  qaList = []
-  PERIOD_OF_TIME = 600 # 5min
-  startTime = time.time()
-  currentTime = 0
-  endTime = time.time() + PERIOD_OF_TIME
+def quizTrack(qList, number_of_questions):
+  score = 0 #score out of 10
+  i = 0 #increment
+  qaList = [] #list of questions asked
+  PERIOD_OF_TIME = 600 #10 min
+  startTime = time.time() #current time
+  currentTime = 0 #time after each question
+  endTime = time.time() + PERIOD_OF_TIME #10 minutes
   
-  if qTotal == 10:
+  if number_of_questions == 10:
     qPoint = 1
   else:
     qPoint = .5
   
   for question in qList:
-    while currentTime < endTime:
+    while currentTime < endTime: #while the time is less than 10 mins
       currentTime = time.time()
-      print(qList[i][0])
+      print(qList[i][0]) #print a random questions
       userAnswer = input("True or False?: ").upper()
       print()
-      qaList.append([qList[i][0], qList[i][1], userAnswer])
+      qaList.append([qList[i][0], qList[i][1], userAnswer]) #append the answer to the answer list
       
-      if checkInput(qList[i][1], userAnswer):
-        score += qPoint
-      i += 1
-      if i == len(qList):
+      if checkInput(qList[i][1], userAnswer): #if the answer is a proper input
+        score += qPoint #if the answer is correct, add a point
+      i += 1 #increment the while loop
+      if i == len(qList): #ensure i is only going up to 10
         break
     break
   
-  elapsedTime = round((currentTime - startTime) / 60, 2)
-  if elapsedTime < 0:
-    elapsedTime = 10.00
+  elapsedTime = round((currentTime - startTime) / 60, 2) #checks elapsed time
+  if elapsedTime < 0: #if it has been over 10 minutes
+    elapsedTime = 10.00 #set the time to 10 minutes
+
+
     
   return qaList, score, elapsedTime
     
 def main():
-  # get dat student info boi
-  studentInfo = [getStudentInfo()]
-  
-  # 10 or 20 questions?
-  qTotal = int(input("How many questions would you like? (10 or 20): "))
+  # get student info
+  studentInfo = [getStudentInfo()] #list of a tuple
+  # 10 or 20 questions
+  number_of_questions = int(input("How many questions would you like? (10 or 20): ")) #number of questions user wants to answer
   print()
-  while qTotal != 10 and qTotal != 20:
-    qTotal = int(input("Invalid entry; Please enter 10 or 20: "))
+  while number_of_questions != 10 and number_of_questions != 20: #if the input is not 10 or 20
+    number_of_questions = int(input("Invalid entry; Please enter 10 or 20: "))
     print()
   
   # get those questions and answers [[q][a]]
-  qList = readFile(qTotal)
+  qList = readFile(number_of_questions)
 
   # get the question list plus what the user answered [[q][a][ua]] also the total score
-  answeredQs, totalScore, elapsedTime = quizTrack(qList, qTotal)
+  answeredQs, totalScore, elapsedTime = quizTrack(qList, number_of_questions)
   # output the file into the directory with the information needed
-  outputFile(studentInfo, answeredQs, totalScore, elapsedTime) #this 10 will be elapsed time when i figure this shit out
-  
+  outputFile(studentInfo, answeredQs, totalScore, elapsedTime)
 
 
-
+  print("Bye!")
 if __name__ == "__main__":
   main()
+
