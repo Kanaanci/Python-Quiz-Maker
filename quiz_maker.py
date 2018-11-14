@@ -3,6 +3,11 @@ import time
 import os
 import sys
 
+def header_info():
+  print('Quiz Maker')
+  print("During the quiz, enter 'S' to restart or 'Q' to exit")
+  print()
+
 def getStudentInfo():
   '''
   gets the name and ID of the student taking the quiz
@@ -13,7 +18,7 @@ def getStudentInfo():
   fName = input("First Name: ").title()
   lName = input("Last Name: ").title()
   studentId = input("Student ID (Ex: A12345): ").title()
-  
+
   while True:
     if checkId(studentId):
       break
@@ -77,7 +82,7 @@ def outputFile(sInfo, qaList, totalScore, et):
   unit_of_time = " minutes" #if the elapsed time is more than one minute
 
   resultsFile = str(sInfo[0][0]) + "_" + str(sInfo[0][1]) + "_" + str(sInfo[0][2]) + ".txt"
-  #creating file namae
+  #creating file name
 
   # this is just creating the file to append to later
   open(resultsFile, 'w').close()
@@ -104,7 +109,15 @@ def outputFile(sInfo, qaList, totalScore, et):
   print(resultsFile + " was created")
   
   sys.exit()
-    
+
+def exitProgram(user_input):
+  if user_input == 'S':
+    os.system('cls')
+    main()
+  else:
+    sys.exit()
+
+
 def checkInput(questionAnswer, userAnswer):
   '''
   Check if student's input matches one of the following:
@@ -140,6 +153,10 @@ def quizTrack(qList, number_of_questions):
       currentTime = time.time()
       print(qList[i][0]) #print a random questions
       userAnswer = input("True or False?: ").upper()
+      
+      if userAnswer.upper() == 'Q' or userAnswer.upper() == 'S':
+        exitProgram(userAnswer)
+        
       print()
       qaList.append([qList[i][0], qList[i][1], userAnswer]) #append the answer to the answer list
       
@@ -159,6 +176,7 @@ def quizTrack(qList, number_of_questions):
   return qaList, score, elapsedTime
     
 def main():
+  header_info()
   # get student info
   studentInfo = [getStudentInfo()] #list of a tuple
   # 10 or 20 questions
