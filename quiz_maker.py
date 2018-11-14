@@ -1,6 +1,7 @@
 import random
-import datetime
+import time
 import os
+import threading
 
 def getStudentInfo():
   '''
@@ -42,7 +43,7 @@ def checkId(id):
 
 def readFile(questAmount):
   '''
-  read test bank, maybe pick 10 random questions
+  read test bank, pick 10 random questions
   '''
   testBank = 'TestBank.txt'
   qList = []
@@ -57,9 +58,7 @@ def readFile(questAmount):
         while rq in qList:
           rq = random.choice(questions)
 
-#        print(i+1, qList[i]) #see questions in list
         qList.append([rq.split('#')[0], rq.split('#')[1]])
-        
         
   except(FileNotFoundError):
     print(testBank, "was not found")
@@ -70,30 +69,26 @@ def outputFile(sInfo, qaList, totalScore, et):
   '''
   Creating the file to be used for the results. Naming format of id_fn_ln.txt
   '''
-#  si, fn, ln = sInfo[0], sInfo[0],sInfo[0]
   resultsFile = str(sInfo[0][0]) + "_" + str(sInfo[0][1]) + "_" + str(sInfo[0][2]) + ".txt"
   
-  try:
-    # if there is already a file with this name, overwrite it.
-      with open(resultsFile, "w") as usrF:
-        usrF.write("")
+  # this is just creating the file so I can append to it later
+  open(resultsFile, 'w').close()
         
-  except FileNotFoundError:
-    print(resultsFile + " Created")
-    with open(resultsFile, "w") as usrF:
-      usrF.write("")
-      
   try:
     with open(resultsFile, 'a') as usrF:
       usrF.write("Student ID: " + sInfo[0][0] + "\n" + "First Name: " + sInfo[0][1] + "\n" + "Last name: " + sInfo[0][2] + "\n")
       usrF.write("Score: " + str(totalScore) + "/10\n")
-      usrF.write("Elapsed time: " + str(et) + "\n")
+      usrF.write("Elapsed time: " + str(et) + " minutes" + "\n")
       
       for i in range(0, len(qaList)):
         usrF.write("\nQ" + str(i + 1) + ". " + qaList[i][0] + "\n" + "Correct answer: " + qaList[i][1] + "\n" + "User answer: " + qaList[i][2] + "\n")
         
   except FileNotFoundError:
-    pass
+    print("Error creating results file")
+    
+  print(resultsFile + " was created")
+  
+  exit()
     
 def checkInput(questionAnswer, userAnswer):
   '''
@@ -113,27 +108,43 @@ def checkInput(questionAnswer, userAnswer):
     
 def quizTrack(qList, qTotal):
   score = 0
+  i = 0
   qaList = []
+  PERIOD_OF_TIME = 600 # 5min
+  startTime = time.time()
+  currentTime = 0
+  endTime = time.time() + PERIOD_OF_TIME
   
   if qTotal == 10:
     qPoint = 1
   else:
     qPoint = .5
-    
-  for i in range(0, len(qList)):
-    print(qList[i][0])
-    userAnswer = input("True or False?: ").upper()
-    print()
-    qaList.append([qList[i][0], qList[i][1], userAnswer])
-    
-    if checkInput(qList[i][1], userAnswer):
-      score += qPoint
-      
-  return qaList, score
   
+  for question in qList:
+    while currentTime < endTime:
+      currentTime = time.time()
+      print(qList[i][0])
+      userAnswer = input("True or False?: ").upper()
+      print()
+      qaList.append([qList[i][0], qList[i][1], userAnswer])
+      
+      if checkInput(qList[i][1], userAnswer):
+        score += qPoint
+      i += 1
+      if i == len(qList):
+        break
+    break
+  
+  elapsedTime = round((currentTime - startTime) / 60, 2)
+  if elapsedTime < 0:
+    elapsedTime = 10.00
+    
+  return qaList, score, elapsedTime
+    
 def main():
   # get dat student info boi
   studentInfo = [getStudentInfo()]
+  
   # 10 or 20 questions?
   qTotal = int(input("How many questions would you like? (10 or 20): "))
   print()
@@ -143,11 +154,11 @@ def main():
   
   # get those questions and answers [[q][a]]
   qList = readFile(qTotal)
-  # get the question list plus what the user answered [[q][a][ua]] also the total score
-  answeredQs, totalScore = quizTrack(qList, qTotal)
-  # output the file into the directory with the information needed
-  outputFile(studentInfo, answeredQs, totalScore, 10) #this 10 will be elapsed time when i figure this shit out
 
+  # get the question list plus what the user answered [[q][a][ua]] also the total score
+  answeredQs, totalScore, elapsedTime = quizTrack(qList, qTotal)
+  # output the file into the directory with the information needed
+  outputFile(studentInfo, answeredQs, totalScore, elapsedTime) #this 10 will be elapsed time when i figure this shit out
   
 
 
