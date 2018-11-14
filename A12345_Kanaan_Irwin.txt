@@ -1,0 +1,45 @@
+Student ID: A12345
+First Name: Kanaan
+Last name: Irwin
+Score: 6/10
+Elapsed time: 31 seconds
+
+Q1. Ray Tomlinson sent the first email
+Correct answer: TRUE
+User answer: TRUE
+
+Q2. the CPU is referred as the stomache of the computer ?
+Correct answer: FALSE
+User answer: F
+
+Q3. A client/server network consists of one client and several server computers.
+Correct answer: FALSE
+User answer: TRUE
+
+Q4. Spam email is a myth
+Correct answer: FALSE
+User answer: FALSE
+
+Q5. In computing, keyboards are used as input devices.
+Correct answer: TRUE
+User answer: T
+
+Q6. Approximately 3 million cell phones are sold everyday
+Correct answer: TRUE
+User answer: F
+
+Q7. The control bus and memories share a bidirectional bus in a typical microprocessor system.
+Correct answer: FALSE
+User answer: T
+
+Q8. A terabyte is equal to 1 million gigabytes?
+Correct answer: FALSE
+User answer: T
+
+Q9. It takes two memory locations (16 bits each) to store an address in the 8085 system
+Correct answer: FALSE
+User answer: F
+
+Q10. HP, Microsoft, and Apple were all started in a garage?
+Correct answer: TRUE
+User answer: T
