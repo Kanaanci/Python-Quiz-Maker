@@ -95,7 +95,7 @@ def outputFile(sInfo, qaList, totalScore, et):
       
       if et < 1:
         unit_of_time = " seconds"
-        et *= 60
+        et = round(et * 60)
       
       user_file.write("Elapsed time: " + str(et) + unit_of_time + "\n")
       
@@ -112,10 +112,12 @@ def outputFile(sInfo, qaList, totalScore, et):
 
 def exitProgram(user_input):
   if user_input == 'S':
-    os.system('cls')
+    print("\n"*100) #this is just for IDEs 
+    os.system('cls' if os.name == 'nt' else 'clear') #this will clear on TERMINALS
     main()
   else:
     sys.exit()
+    
 
 
 def checkInput(questionAnswer, userAnswer):
